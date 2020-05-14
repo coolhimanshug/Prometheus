@@ -1,0 +1,88 @@
+global:
+  scrape_interval: 1s
+  evaluation_interval: 1s
+
+rule_files:
+  - alert.rules.yml
+
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      - localhost:9093
+
+
+scrape_configs:
+  - job_name: 'counter-stake-node-Metrics'
+    ec2_sd_configs:
+      - region: us-east-1
+        port: 9100
+    relabel_configs:
+        # Only monitor instances with a Name starting with "counter-stake"
+      - source_labels: [__meta_ec2_tag_testnet_type]
+        regex: counter-stake 
+        action: keep
+  
+  - job_name: 'heimdall-counter-stake'
+    ec2_sd_configs:
+      - region: us-east-1
+        port: 26660
+    relabel_configs:
+        # Only monitor instances with a Name starting with "counter-stake"
+      - source_labels: [__meta_ec2_tag_testnet_type]
+        regex: counter-stake
+        action: keep
+ 
+  - job_name: 'tesnetV3-node-Metrics'
+    ec2_sd_configs:
+      - region: us-east-1
+        port: 9100
+    relabel_configs:
+        # Only monitor instances with a Name starting with "tesnetV3_*"
+      - source_labels: [__meta_ec2_tag_Name]
+        regex:  tesnetV3.*
+        action: keep     
+
+  - job_name: 'cadvisor-hermione' 
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['3.208.90.248:8081','3.228.203.161:8081']
+
+  - job_name: 'ELK-master-prod'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['54.167.69.20:9114']
+
+  - job_name: 'ELK-master-prod|Process-exporter'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['54.167.69.20:9256']
+
+  - job_name: 'ELK-master-prod|node-exporter'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['54.167.69.20:9100']  
+
+  - job_name: 'tesnetV3|Process-exporter'
+    ec2_sd_configs:
+      - region: us-east-1
+        port: 9256
+    relabel_configs:
+        # Only monitor instances with a Name starting with "tesnetV3_*"
+      - source_labels: [__meta_ec2_tag_Name]
+        regex:  tesnetV3.*
+        action: keep      
+      - source_labels: [__meta_ec2_tag_Name]
+        regex:  tesnetV3-blockscout.*   
+        action: drop
+
+  - job_name: 'tesnetV2|Process-exporter'
+    ec2_sd_configs:
+      - region: us-east-1
+        port: 9256
+    relabel_configs:
+        # Only monitor instances with a Name starting with "tesnetV3_*"
+      - source_labels: [__meta_ec2_tag_Name]
+        regex:  testnetV2.*
+        action: keep
+

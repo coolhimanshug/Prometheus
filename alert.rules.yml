@@ -1,0 +1,128 @@
+groups:
+- name: alert.rules
+  rules:
+  - alert: redisDown
+    expr: namedprocess_namegroup_num_procs{groupname="redis-server"} < 1
+    for: 5m
+    labels:
+      severity: error
+    annotations:
+      summary: "service {{ $labels.instance }} down"
+      description: "{{ $labels.instance }} of job {{ $labels.groupname}} has been down for more than 5 minutes."
+
+  - alert: hermioneDown
+    expr: namedprocess_namegroup_num_procs{groupname="main"} < 1
+    for: 5m
+    labels:
+      severity: error
+    annotations:
+      summary: "service {{ $labels.instance }} down"
+      description: "{{ $labels.instance }} of job hermione has been down for more than 5 minutes."
+
+  - alert: hasuraContainerKilled
+    expr: time() - container_last_seen{image="hasura/graphql-engine:latest"} > 60
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "container {{ $labels.instance }} down"
+      description: "{{ $labels.instance }} of job {{ $labels.name}} has been down for more than 5 minutes."
+
+      # - alert: InstanceDown
+      #expr: up == 0
+      #for: 5m
+      #labels:
+      #severity: "critical"
+      #annotations:
+      #summary: "Instance {{ $labels.instance }} down"
+      #description: "{{ $labels.instance }} ({{ $labels.node_name }}) of job {{ $labels.job }} has been down for more than 2 minutes."
+
+  - alert: HighCpuLoad
+    expr: 100 - (avg by(instance) (irate(node_cpu{mode="idle"}[5m])) * 100) > 90
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Instance {{ $labels.instance }} ({{ $labels.node_name }}) under high load"
+      description: "{{ $labels.instance }} ({{ $labels.node_name }}) of job {{ $labels.job }} is under high load."
+
+  - alert: HostOutOfMemory
+    expr: node_memory_MemAvailable/ node_memory_MemTotal * 100 < 10
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Host out of memory (instance {{ $labels.instance }})"
+      description: "Node memory is filling up (< 10% left)\n  VALUE: {{ $value }}\n  LABELS: {{ $labels }}"    
+
+  
+  - alert: HostOutOfDiskSpace
+    expr: (node_filesystem_size{fstype="ext4"} - node_filesystem_free{fstype="ext4"}) / node_filesystem_size{fstype="ext4"} * 100 > 85 
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Host out of disk space (instance {{ $labels.instance }})"
+      description: " Disk usage is {{ humanize $value}}%. Reported by instance {{ $labels.instance }} of job {{ $labels.job }}."
+      
+
+  - alert: ElasticsearchHeapUsageTooHigh
+    expr: (elasticsearch_jvm_memory_used_bytes{area="heap"} / elasticsearch_jvm_memory_max_bytes{area="heap"}) * 100 > 90
+    for: 5m
+    labels:
+      severity: error
+    annotations:
+      summary: "Elasticsearch Heap Usage Too High (instance {{ $labels.instance }})"
+      description: "The heap usage is over 90% for 5m\n  VALUE: {{ $value }}\n  LABELS: {{ $labels }}"
+
+
+  - alert: ElasticsearchDiskOutOfSpace
+    expr: elasticsearch_filesystem_data_available_bytes / elasticsearch_filesystem_data_size_bytes * 100 < 10
+    for: 5m
+    labels:
+      severity: error
+    annotations:
+      summary: "Elasticsearch disk out of space (instance {{ $labels.instance }})"
+      description: "The disk usage is over 90%\n  VALUE: {{ $value }}\n  LABELS: {{ $labels }}"
+
+
+  - alert: ElasticsearchClusterRed
+    expr: elasticsearch_cluster_health_status{color="red"} == 1
+    for: 5m
+    labels:
+      severity: error
+    annotations:
+      summary: "Elasticsearch Cluster Red (instance {{ $labels.instance }})"
+      description: "Elastic Cluster Red status\n  VALUE: {{ $value }}\n  LABELS: {{ $labels }}"
+ 
+
+  - alert: ElasticsearchDown
+    expr: namedprocess_namegroup_num_procs{groupname="elasticsearch"} < 1
+    for: 5m
+    labels:
+      severity: error
+    annotations:
+      summary: "service {{ $labels.instance }} down"
+      description: "{{ $labels.instance }} of job {{ $labels.groupname}} has been down for more than 5 minutes."
+
+
+  - alert: javaServicesDown
+    expr: namedprocess_namegroup_num_procs{groupname="java"} < 2
+    for: 5m
+    labels:
+      severity: error
+    annotations:
+      summary: "service {{ $labels.instance }} down"
+      description: "{{ $labels.instance }} of job java  has been down for more than 5 minutes."
+
+
+  - alert: filebeatDown
+    expr: namedprocess_namegroup_num_procs{groupname="filebeat"} < 1
+    for: 5m
+    labels:
+      severity: error
+    annotations:
+      summary: "service {{ $labels.instance }} down"
+      description: "{{ $labels.instance }} of job {{ $labels.groupname}} has been down for more than 5 minutes."
+
+

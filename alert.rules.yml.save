@@ -1,0 +1,10 @@
+groups:
+- name: alert.rules
+  rules:
+  - alert: heimdallDown
+    expr: tendermint_consensus_height == 0
+    for: 300s
+    labels:
+      severity: "critical"
+    annotations:
+      summary: "heimdall {{ $labels.instance }} down"
